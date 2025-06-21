@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+  <style>
+    #auth-buttons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background-color: rgb(19, 133, 226);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+  #auth-buttons button {
+    margin-left: 10px; /* Use margin-left para espaço entre botões (da esquerda para a direita) */
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    }
+
+    .swagger-ui .topbar {
+    margin-top: 80px; /* Ajuste este valor conforme a altura dos seus botões + espaço desejado */
+    box-sizing: border-box; /* Inclui padding e border no cálculo total da largura/altura */
+  }
+
+  </style>
+</head>
+<body>
+  <div id="auth-buttons">
+    <button onclick="loginWithGoogle()">🔐 Login com Google</button>
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+  <script>
+    // Captura token JWT via query e guarda localmente
+    const token = new URLSearchParams(window.location.search).get('token');
+    if (token) {
+      localStorage.setItem('jwt-token', token);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Inicializar Swagger UI com interceptor para enviar o JWT
+    const ui = SwaggerUIBundle({
+      url: "/swagger.json",
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      layout: "StandaloneLayout",
+      requestInterceptor: (req) => {
+        const jwt = localStorage.getItem('jwt-token');
+        if (jwt) {
+          req.headers['Authorization'] = `Bearer ${jwt}`;
+        }
+        return req;
+      }
+    });
+
+    // Funções de autenticação
+    function loginWithGoogle() {
+      window.location.href = "/auth/google";
+    }
+
+    function logout() {
+      localStorage.removeItem('jwt-token');
+      window.location.href = "/swagger.html";
+    }
+  </script>
+</body>
+</html>

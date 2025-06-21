@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: app_prod
+    image: inf24dw2g36/node:dw2.m2prod   # Imagem do backend no Docker Hub
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: 12345678
+      DB_NAME: Scheduler
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - scheduler-network
+
+  db:
+    container_name: mysql_prod
+    image: inf24dw2g36/mysql:dw2.m2prod  # Imagem do MySQL customizada no Docker Hub
+    build:
+      context: ./sql
+      dockerfile: Dockerfile.prod.sql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: Scheduler
+      LANG: C.UTF-8
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_general_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 25s
+      timeout: 5s
+      retries: 5
+      start_period: 150s
+    networks:
+      - scheduler-network
+
+networks:
+  scheduler-network:
+    driver: bridge

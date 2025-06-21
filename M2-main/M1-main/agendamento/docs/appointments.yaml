@@ -1,0 +1,214 @@
+openapi: 3.0.0
+info:
+  title: API de Consultas
+  version: 1.0.0
+  description: Endpoints para agendamento e gestão de consultas
+
+tags:
+  - name: Appointments
+    description: Operações relacionadas com os agendamentos
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /appointments:
+    get:
+      summary: Retorna uma lista de consultas
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de consultas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    date:
+                      type: string
+                      format: date
+                    time:
+                      type: string
+                      format: time
+                    notes:
+                      type: string
+                      nullable: true
+                    Doctor:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        specialty:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                    User:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+        500:
+          description: Erro interno do servidor
+
+    post:
+      summary: Cria uma nova consulta
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - time
+                - user_id
+                - doctor_id
+              properties:
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  format: time
+                notes:
+                  type: string
+                  nullable: true
+                user_id:
+                  type: integer
+                doctor_id:
+                  type: integer
+      responses:
+        201:
+          description: Consulta criada com sucesso
+        400:
+          description: Dados inválidos ou ausentes
+        500:
+          description: Erro interno do servidor
+
+  /appointments/{id}:
+    get:
+      summary: Retorna uma consulta pelo ID
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Consulta encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  date:
+                    type: string
+                    format: date
+                  time:
+                    type: string
+                    format: time
+                  notes:
+                    type: string
+                    nullable: true
+                  user_id:
+                    type: integer
+                  doctor_id:
+                    type: integer
+        404:
+          description: Consulta não encontrada
+        500:
+          description: Erro interno do servidor
+
+    put:
+      summary: Atualiza os dados de uma consulta
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - time
+                - user_id
+                - doctor_id
+              properties:
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  format: time
+                notes:
+                  type: string
+                  nullable: true
+                user_id:
+                  type: integer
+                doctor_id:
+                  type: integer
+      responses:
+        200:
+          description: Consulta atualizada com sucesso
+        400:
+          description: Dados inválidos
+        404:
+          description: Consulta não encontrada
+        500:
+          description: Erro interno do servidor
+
+    delete:
+      summary: Elimina uma consulta pelo ID
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Consulta eliminada com sucesso
+        404:
+          description: Consulta não encontrada
+        500:
+          description: Erro interno do servidor

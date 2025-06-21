@@ -1,0 +1,207 @@
+openapi: 3.0.0
+info:
+  title: API de Médicos
+  version: 1.0.0
+  description: Endpoints relacionados com médicos
+
+tags:
+  - name: Doctors
+    description: Operações relacionadas com médicos
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /doctors:
+    get:
+      summary: Retorna uma lista de médicos
+      tags: [Doctors]
+      responses:
+        200:
+          description: Lista de médicos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+        500:
+          description: Erro ao procurar médicos
+
+    post:
+      summary: Cria um novo médico
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - specialty_id
+              properties:
+                name:
+                  type: string
+                  description: Nome do médico
+                specialty_id:
+                  type: integer
+                  description: ID da especialidade
+      responses:
+        201:
+          description: Médico criado
+        400:
+          description: Dados inválidos
+
+  /doctors/{id}:
+    get:
+      summary: Retorna um médico pelo ID
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Médico encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        404:
+          description: Médico não encontrado
+
+    put:
+      summary: Atualiza os dados de um médico
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                specialty_id:
+                  type: integer
+      responses:
+        200:
+          description: Médico atualizado
+        400:
+          description: Erro de validação
+        404:
+          description: Médico não encontrado
+
+    delete:
+      summary: Elimina um médico
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Médico removido
+        404:
+          description: Médico não encontrado
+
+  /doctors/{id}/appointments:
+    get:
+      summary: Lista todas as consultas de um médico com seus pacientes
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Lista de consultas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    consultaId:
+                      type: integer
+                    date:
+                      type: string
+                      format: date
+                    time:
+                      type: string
+                      format: time
+                    notes:
+                      type: string
+                      nullable: true
+                    User:
+                      type: object
+                      description: Dados do paciente
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                    Doctor:
+                      type: object
+                      description: Dados do médico
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        specialty:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+        401:
+          description: Não autenticado
+        403:
+          description: Acesso negado
+        404:
+          description: Médico não encontrado
+        500:
+          description: Erro interno

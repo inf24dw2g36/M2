@@ -1,0 +1,315 @@
+openapi: 3.0.0
+tags:
+  - name: Users
+    description: Operações relacionadas com pacientes
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /users:
+    get:
+      summary: Retorna uma lista de pacientes
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de pacientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+        500:
+          description: Erro ao buscar pacientes
+
+    post:
+      summary: Cria um novo paciente
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - google_id
+              properties:
+                name:
+                  type: string
+                  example: "João Silva"
+                email:
+                  type: string
+                  format: email
+                  example: "joao@example.com"
+                google_id:
+                  type: string
+                  example: "118005194401585621327"
+      responses:
+        201:
+          description: Utilizador criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  google_id:
+                    type: string
+                  role:
+                    type: string
+                    enum: ['user', 'admin']
+        400:
+          description: Pedido inválido
+        500:
+          description: Erro interno
+
+  /users/{id}:
+    get:
+      summary: Retorna um paciente pelo ID
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Paciente encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        404:
+          description: Paciente não encontrado
+
+    put:
+      summary: Atualiza os dados de um paciente
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        200:
+          description: Paciente atualizado
+        400:
+          description: Erro de atualização
+        404:
+          description: Paciente não encontrado
+
+    delete:
+      summary: Elimina um paciente pelo ID
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Paciente eliminado
+        404:
+          description: Paciente não encontrado
+
+  /users/{userId}/doctors:
+    get:
+      summary: Retorna todos os médicos com quem o utilizador teve consultas
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Lista de médicos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+        403:
+          description: Acesso negado
+        500:
+          description: Erro interno
+
+  /users/{userId}/specialties/{specialtyId}/appointments:
+    get:
+      summary: Retorna consultas com médicos de uma especialidade específica
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: specialtyId
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Consultas encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    date:
+                      type: string
+                      format: date
+                    time:
+                      type: string
+                      format: time
+                    notes:
+                      type: string
+                      nullable: true
+                    Doctor:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        specialty:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+        403:
+          description: Acesso negado
+        500:
+          description: Erro interno
+
+  /users/{userId}/appointments:
+    get:
+      summary: Retorna todas as consultas de um utilizador
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Lista de consultas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    date:
+                      type: string
+                      format: date
+                    time:
+                      type: string
+                      format: time
+                    notes:
+                      type: string
+                      nullable: true
+                    User:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        email:
+                          type: string
+                    Doctor:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        specialty:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+        403:
+          description: Acesso negado
+        500:
+          description: Erro interno
