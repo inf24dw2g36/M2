@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-
+ 
 // Importações do Material-UI
 import {
   AppBar, Toolbar, Typography, Button, Container, Box,
@@ -7,7 +7,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   CircularProgress, IconButton // Adicionado IconButton para o botão de fechar modal
 } from '@mui/material';
-
+ 
 // Importações dos Ícones do Material-UI (substituindo lucide-react)
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PersonIcon from '@mui/icons-material/Person';
@@ -18,31 +18,31 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Para "Agendar Nova Consulta"
 import DeleteIcon from '@mui/icons-material/Delete'; // Para "Apagar Consulta"
 import CloseIcon from '@mui/icons-material/Close'; // Para o botão de fechar o modal
-
-
+ 
+ 
 // Contexto para gerir o estado de autenticação e dados do utilizador
 const AuthContext = createContext(null);
-
+ 
 // Componente principal da aplicação
 const App = () => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [message, setMessage] = useState('');
-
+ 
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 3000);
   };
-
+ 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get('token');
-
+ 
     if (jwtToken) {
       setToken(jwtToken);
       localStorage.setItem('jwtToken', jwtToken);
       window.history.replaceState({}, document.title, window.location.pathname);
-
+ 
       try {
         const decodedUser = JSON.parse(atob(jwtToken.split('.')[1]));
         setUser(decodedUser);
@@ -70,11 +70,11 @@ const App = () => {
       }
     }
   }, []);
-
+ 
   const handleLogin = () => {
     window.location.href = 'http://localhost:3000/auth/google';
   };
-
+ 
   const handleLogout = () => {
     setToken(null);
     setUser(null);
@@ -83,9 +83,9 @@ const App = () => {
     clearMessage();
     setCurrentPage('home');
   };
-
+ 
   const authContextValue = { token, user, handleLogout, setMessage, clearMessage };
-
+ 
   return (
     <AuthContext.Provider value={authContextValue}>
       <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.100', display: 'flex', flexDirection: 'column' }}>
@@ -100,7 +100,11 @@ const App = () => {
               {token && (
                 <>
                   <Button color="inherit" onClick={() => setCurrentPage('appointments')} startIcon={<CalendarMonthIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Todas as Consultas</Button>
-                  <Button color="inherit" onClick={() => setCurrentPage('my-appointments')} startIcon={<PersonIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Minhas Consultas</Button>
+                  {user?.role === 'user' && (
+                  <Button color="inherit" onClick={() => setCurrentPage('my-appointments')} startIcon={<PersonIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>
+                    As Minhas Consultas
+                  </Button>
+                  )}
                   <Button color="inherit" onClick={() => setCurrentPage('doctors')} startIcon={<HealingIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Médicos</Button>
                   <Button color="inherit" onClick={() => setCurrentPage('specialties')} startIcon={<HealingIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Especialidades</Button>
                 </>
@@ -113,13 +117,13 @@ const App = () => {
             </Box>
           </Toolbar>
         </AppBar>
-
+ 
         {message && (
           <Box sx={{ position: 'fixed', top: 80, right: 16, backgroundColor: 'info.main', color: 'white', p: 2, borderRadius: 2, boxShadow: 3, zIndex: 50 }}>
             <Typography variant="body1">{message}</Typography>
           </Box>
         )}
-
+ 
         <Container sx={{ mt: 4, flexGrow: 1, padding: 3 }}>
           {user && (
             <Box sx={{ backgroundColor: 'blue.100', color: 'blue.800', p: 2, borderRadius: 2, boxShadow: 2, mb: 3, textAlign: 'center' }}>
@@ -128,7 +132,7 @@ const App = () => {
               </Typography>
             </Box>
           )}
-
+ 
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'appointments' && token && <AppointmentsPage />}
           {currentPage === 'my-appointments' && token && <MyAppointmentsPage />}
@@ -141,7 +145,7 @@ const App = () => {
             </Box>
           )}
         </Container>
-
+ 
         <Box sx={{ backgroundColor: 'grey.800', color: 'white', p: 2, textAlign: 'center', borderTopLeftRadius: 8, borderTopRightRadius: 8, boxShadow: '0px -2px 4px rgba(0,0,0,0.2)' }}>
           <Typography variant="body2">&copy; 2025 Scheduler App. Todos os direitos reservados.</Typography>
         </Box>
@@ -149,7 +153,131 @@ const App = () => {
     </AuthContext.Provider>
   );
 };
-
+ 
+// Componente para exibir as Consultas do Utilizador Logado
+const MyAppointmentsPage = () => {
+  const { token, user, setMessage, clearMessage } = useContext(AuthContext);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+ 
+  const fetchMyAppointments = async () => {
+    if (!token || !user) {
+      setMessage('Erro: Utilizador não autenticado para ver as suas consultas.');
+      clearMessage();
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:3000/api/users/${user.id}/appointments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao buscar as suas consultas.');
+      }
+      const data = await response.json();
+      setAppointments(data);
+    } catch (err) {
+      setError(err.message);
+      setMessage(`Erro: ${err.message}`);
+      clearMessage();
+    } finally {
+      setLoading(false);
+    }
+  };
+ 
+  useEffect(() => {
+    fetchMyAppointments();
+  }, [token, user]);
+ 
+  const handleDeleteClick = (appointment) => {
+    setAppointmentToDelete(appointment);
+    setShowDeleteModal(true);
+  };
+ 
+  const confirmDelete = async () => {
+    if (!appointmentToDelete) return;
+ 
+    try {
+      const response = await fetch(`http://localhost:3000/api/appointments/${appointmentToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+ 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao apagar a consulta.');
+      }
+ 
+      setAppointments(prev => prev.filter(app => app.id !== appointmentToDelete.id));
+      setMessage('Consulta apagada com sucesso!');
+      clearMessage();
+    } catch (err) {
+      setMessage(`Erro ao apagar: ${err.message}`);
+      clearMessage();
+    } finally {
+      setShowDeleteModal(false);
+      setAppointmentToDelete(null);
+    }
+  };
+ 
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setAppointmentToDelete(null);
+  };
+ 
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
+ 
+  return (
+    <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
+      <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Minhas Consultas</Typography>
+      {appointments.length === 0 ? (
+        <Typography sx={{ textAlign: 'center', color: 'grey.600' }}>Nenhuma consulta encontrada para o seu utilizador.</Typography>
+      ) : (
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
+          {appointments.map(appointment => (
+            <Box key={appointment.id} sx={{ p: 2, borderRadius: 2, boxShadow: 1, border: '1px solid', borderColor: 'success.200', backgroundColor: 'success.50' }}>
+              <Typography variant="body1" sx={{ fontWeight: 'semibold', color: 'success.800' }}>Data: {appointment.date}</Typography>
+              <Typography variant="body1" sx={{ color: 'grey.700' }}>Hora: {appointment.time}</Typography>
+              <Typography variant="body1" sx={{ color: 'grey.700' }}>Notas: {appointment.notes || 'N/A'}</Typography>
+              <Typography variant="body1" sx={{ color: 'grey.700' }}>Médico: {appointment.Doctor ? appointment.Doctor.name : 'Desconhecido'}</Typography>
+             
+              {/* Mostrar botão apagar só se o utilizador for role 'user' */}
+              {user?.role === 'user' && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                  <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(appointment)} startIcon={<DeleteIcon />}>
+                    Apagar
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          ))}
+        </Box>
+      )}
+ 
+      <Dialog open={showDeleteModal} onClose={cancelDelete}>
+        <DialogTitle>Confirmar Eliminação</DialogTitle>
+        <DialogContent>
+          <Typography>Tem certeza que deseja apagar a consulta em {appointmentToDelete?.date} às {appointmentToDelete?.time}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete}>Cancelar</Button>
+          <Button onClick={confirmDelete} color="error" autoFocus>Sim, Apagar</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+ 
 // Componente da Página Inicial
 const HomePage = () => (
   <Box sx={{ backgroundColor: 'white', p: 4, borderRadius: 2, boxShadow: 3, textAlign: 'center' }}>
@@ -179,15 +307,15 @@ const HomePage = () => (
     </Typography>
   </Box>
 );
-
+ 
 // Componente para exibir a lista de Consultas
 const AppointmentsPage = () => {
-  const { token, setMessage, clearMessage } = useContext(AuthContext);
+  const { token, user, setMessage, clearMessage } = useContext(AuthContext);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
+ 
   const fetchAppointments = async () => {
     if (!token) return;
     try {
@@ -211,19 +339,45 @@ const AppointmentsPage = () => {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     fetchAppointments();
   }, [token]);
-
+ 
   const handleAppointmentCreated = () => {
     setShowCreateModal(false);
     fetchAppointments();
   };
-
+ 
+  const handleDeleteAppointment = async (id) => {
+    if (!window.confirm('Tens a certeza que queres apagar esta consulta?')) return;
+ 
+    try {
+      const response = await fetch(`http://localhost:3000/api/appointments/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+ 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao apagar consulta.');
+      }
+ 
+      setAppointments(prev => prev.filter(app => app.id !== id));
+      setMessage('Consulta apagada com sucesso.');
+      clearMessage();
+    } catch (err) {
+      setError(err.message);
+      setMessage(`Erro: ${err.message}`);
+      clearMessage();
+    }
+  };
+ 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
-
+ 
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -232,7 +386,7 @@ const AppointmentsPage = () => {
           Agendar Nova Consulta
         </Button>
       </Box>
-
+ 
       {appointments.length === 0 ? (
         <Typography sx={{ textAlign: 'center', color: 'grey.600' }}>Nenhuma consulta encontrada.</Typography>
       ) : (
@@ -244,11 +398,23 @@ const AppointmentsPage = () => {
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Notas: {appointment.notes || 'N/A'}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Utilizador: {appointment.User ? appointment.User.name : 'Desconhecido'}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Médico: {appointment.Doctor ? appointment.Doctor.name : 'Desconhecido'}</Typography>
+ 
+              {user?.role === 'admin' && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  sx={{ mt: 1 }}
+                  onClick={() => handleDeleteAppointment(appointment.id)}
+                >
+                  Apagar
+                </Button>
+              )}
             </Box>
           ))}
         </Box>
       )}
-
+ 
       {showCreateModal && (
         <CreateAppointmentForm
           onClose={() => setShowCreateModal(false)}
@@ -258,139 +424,16 @@ const AppointmentsPage = () => {
     </Box>
   );
 };
-
-// Componente para exibir as Consultas do Utilizador Logado
-const MyAppointmentsPage = () => {
-  const { token, user, setMessage, clearMessage } = useContext(AuthContext);
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
-
-  const fetchMyAppointments = async () => {
-    if (!token || !user) {
-      setMessage('Erro: Utilizador não autenticado para ver as suas consultas.');
-      clearMessage();
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/appointments`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao buscar as suas consultas.');
-      }
-      const data = await response.json();
-      setAppointments(data);
-    } catch (err) {
-      setError(err.message);
-      setMessage(`Erro: ${err.message}`);
-      clearMessage();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMyAppointments();
-  }, [token, user]);
-
-  const handleDeleteClick = (appointment) => {
-    setAppointmentToDelete(appointment);
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!appointmentToDelete) return;
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/appointments/${appointmentToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao apagar a consulta.');
-      }
-
-      setAppointments(prev => prev.filter(app => app.id !== appointmentToDelete.id));
-      setMessage('Consulta apagada com sucesso!');
-      clearMessage();
-    } catch (err) {
-      setMessage(`Erro ao apagar: ${err.message}`);
-      clearMessage();
-    } finally {
-      setShowDeleteModal(false);
-      setAppointmentToDelete(null);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setAppointmentToDelete(null);
-  };
-
-
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-  if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
-
-  return (
-    <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
-      <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Minhas Consultas</Typography>
-      {appointments.length === 0 ? (
-        <Typography sx={{ textAlign: 'center', color: 'grey.600' }}>Nenhuma consulta encontrada para o seu utilizador.</Typography>
-      ) : (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
-          {appointments.map(appointment => (
-            <Box key={appointment.id} sx={{ p: 2, borderRadius: 2, boxShadow: 1, border: '1px solid', borderColor: 'success.200', backgroundColor: 'success.50' }}>
-              <Typography variant="body1" sx={{ fontWeight: 'semibold', color: 'success.800' }}>Data: {appointment.date}</Typography>
-              <Typography variant="body1" sx={{ color: 'grey.700' }}>Hora: {appointment.time}</Typography>
-              <Typography variant="body1" sx={{ color: 'grey.700' }}>Notas: {appointment.notes || 'N/A'}</Typography>
-              <Typography variant="body1" sx={{ color: 'grey.700' }}>Médico: {appointment.Doctor ? appointment.Doctor.name : 'Desconhecido'}</Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                {/* Botão de Editar Consulta (comentado) */}
-                {/* <Button variant="outlined" size="small" sx={{ mr: 1 }}>
-                  Editar
-                </Button> */}
-                <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteClick(appointment)} startIcon={<DeleteIcon />}>
-                  Apagar
-                </Button>
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      )}
-
-      <Dialog open={showDeleteModal} onClose={cancelDelete}>
-        <DialogTitle>Confirmar Eliminação</DialogTitle>
-        <DialogContent>
-          <Typography>Tem certeza que deseja apagar a consulta em {appointmentToDelete?.date} às {appointmentToDelete?.time}?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelDelete}>Cancelar</Button>
-          <Button onClick={confirmDelete} color="error" autoFocus>Sim, Apagar</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
-};
-
+ 
+ 
+ 
 // Componente para exibir a lista de Médicos
 const DoctorsPage = () => {
   const { token, setMessage, clearMessage } = useContext(AuthContext);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ 
   useEffect(() => {
     const fetchDoctors = async () => {
       if (!token) return;
@@ -417,10 +460,10 @@ const DoctorsPage = () => {
     };
     fetchDoctors();
   }, [token]);
-
+ 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
-
+ 
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Nossos Médicos</Typography>
@@ -439,14 +482,14 @@ const DoctorsPage = () => {
     </Box>
   );
 };
-
+ 
 // Componente para exibir a lista de Especialidades
 const SpecialtiesPage = () => {
   const { token, setMessage, clearMessage } = useContext(AuthContext);
   const [specialties, setSpecialties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ 
   useEffect(() => {
     const fetchSpecialties = async () => {
       if (!token) return;
@@ -473,10 +516,10 @@ const SpecialtiesPage = () => {
     };
     fetchSpecialties();
   }, [token]);
-
+ 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
-
+ 
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Especialidades Médicas</Typography>
@@ -494,7 +537,7 @@ const SpecialtiesPage = () => {
     </Box>
   );
 };
-
+ 
 // Componente: Formulário para Criar Nova Consulta
 const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
   const { token, user, setMessage, clearMessage } = useContext(AuthContext);
@@ -507,7 +550,7 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [formLoading, setFormLoading] = useState(true);
   const [formError, setFormError] = useState(null);
-
+ 
   useEffect(() => {
     const fetchFormData = async () => {
       if (!token) {
@@ -521,13 +564,13 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
         });
         const doctorsData = await doctorsResponse.json();
         setDoctors(doctorsData);
-
+ 
         const specialtiesResponse = await fetch('http://localhost:3000/api/specialties', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const specialtiesData = await specialtiesResponse.json();
         setSpecialties(specialtiesData);
-
+ 
       } catch (err) {
         setFormError(`Erro ao carregar dados: ${err.message}`);
         setMessage(`Erro ao carregar dados para o formulário: ${err.message}`);
@@ -538,19 +581,19 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
     };
     fetchFormData();
   }, [token]);
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
     setFormError(null);
-
+ 
     if (!user || !user.id) {
       setMessage('Erro: ID do utilizador não disponível para agendar consulta.');
       clearMessage();
       setFormLoading(false);
       return;
     }
-
+ 
     const newAppointment = {
       user_id: user.id,
       doctorId: parseInt(selectedDoctor),
@@ -559,10 +602,10 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
       time,
       notes
     };
-
-
+ 
+ 
     console.log('A enviar nova consulta:', newAppointment);
-
+ 
     try {
       const response = await fetch('http://localhost:3000/api/appointments', {
         method: 'POST',
@@ -572,12 +615,12 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
         },
         body: JSON.stringify(newAppointment),
       });
-
+ 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falha ao agendar consulta.');
       }
-
+ 
       setMessage('Consulta agendada com sucesso!');
       clearMessage();
       onAppointmentCreated();
@@ -589,18 +632,18 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
       setFormLoading(false);
     }
   };
-
+ 
   const filteredDoctors = selectedSpecialty
     ? doctors.filter(doctor => doctor.specialty && doctor.specialty.id === parseInt(selectedSpecialty))
     : doctors;
-
+ 
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Agendar Nova Consulta</DialogTitle>
       <DialogContent dividers>
         {formLoading && <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}><CircularProgress /></Box>}
         {formError && <Typography color="error" sx={{ mb: 2 }}>Erro: {formError}</Typography>}
-
+ 
         {!formLoading && (
           <form onSubmit={handleSubmit}>
             <TextField
@@ -682,5 +725,5 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
     </Dialog>
   );
 };
-
+ 
 export default App;
