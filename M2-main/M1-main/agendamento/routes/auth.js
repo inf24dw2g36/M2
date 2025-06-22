@@ -4,11 +4,13 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 // Iniciar autenticação com Google
-router.get('/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email']
-  })
-);
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email'],
+  prompt: 'select_account',        // força sempre a tela de escolha de conta
+  accessType: 'offline',
+  includeGrantedScopes: true
+}));
+
 
 // Callback do Google após o login
 router.get('/google/callback',
