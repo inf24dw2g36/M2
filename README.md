@@ -10,25 +10,24 @@ A API foi desenvolvida no Momento 1 com Node.js, Express e MySQL, protegida por 
 
 ## 📁 Organização do Repositório
 
-- [`/src`](./src): Código-fonte da API backend (Node.js + Express)
-- [`/frontend`](./frontend): Código da aplicação cliente em React
-- [`/sql`](./sql): Scripts SQL para criação e população da base de dados
-- [`/doc`](./doc): Capítulos do relatório em Markdown
-- [`docker-compose.yml`](./docker-compose.yml): Orquestração local de containers
-- [`docker-compose_prod.yml`](./docker-compose_prod.yml): Versão para produção com imagens DockerHub
-- [`README.md`](./README.md): Este documento
-
+- **pasta src** - Código-fonte da API backend (Node.js + Express)
+- **pasta frontend** - Código da aplicação cliente em React
+- **pasta sql** - Scripts SQL para criação e população da base de dados
+  
 ## 📄 Documento OpenAPI
 
 A documentação da API encontra-se em formato OpenAPI (Swagger), especificando todos os endpoints REST, com autenticação, parâmetros, respostas e permissões.
 
-- [openapi.json](./doc/openapi.json)
+👉 [API de Agendamento de Consultas.postman_collection.json](./M2-main/M1-main/PostmanCollection/API%20de%20Agendamento%20de%20Consultas.postman_collection.json)
 
 ## 🖼️ Galeria
 
-| Página Inicial | Login Google | Consultas do Admin | Consultas do Utilizador |
-|----------------|--------------|---------------------|--------------------------|
-| ![](./doc/img/home.png) | ![](./doc/img/login.png) | ![](./doc/img/admin-consultas.png) | ![](./doc/img/user-consultas.png) |
+| Funcionalidade | Imagem |
+| --- | ----------- |
+| Página Inicial |  ![Login](/galeria/PaginaInicial.png) |
+| Login Google |  ![Users](/galeria/LoginGoogle.png) |
+| Consultas do Admin |  ![Doctors](/galeria/ConsultasAdmin.png) |
+| Consultas do Utilizador |  ![Appointments](/galeria/Consultas_do_Utilizador.png) |
 
 ## 🛠️ Tecnologias Utilizadas
 
