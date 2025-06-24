@@ -10,14 +10,10 @@ A API foi desenvolvida no Momento 1 com Node.js, Express e MySQL, protegida por 
 
 ## 📁 Organização do Repositório
 
-- [`/src`](./src): Código-fonte da API backend (Node.js + Express)
-- [`/frontend`](./frontend): Código da aplicação cliente em React
-- [`/sql`](./sql): Scripts SQL para criação e população da base de dados
-- [`/doc`](./doc): Capítulos do relatório em Markdown
-- [`docker-compose.yml`](./docker-compose.yml): Orquestração local de containers
-- [`docker-compose_prod.yml`](./docker-compose_prod.yml): Versão para produção com imagens DockerHub
-- [`README.md`](./README.md): Este documento
-
+- **pasta src** - Código-fonte da API backend (Node.js + Express)
+- **pasta frontend** - Código da aplicação cliente em React
+- **pasta sql** - Scripts SQL para criação e população da base de dados
+  
 ## 📄 Documento OpenAPI
 
 A documentação da API encontra-se em formato OpenAPI (Swagger), especificando todos os endpoints REST, com autenticação, parâmetros, respostas e permissões.
