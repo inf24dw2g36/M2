@@ -26,9 +26,12 @@ A documentação da API encontra-se em formato OpenAPI (Swagger), especificando 
 
 ## 🖼️ Galeria
 
-| Página Inicial | Login Google | Consultas do Admin | Consultas do Utilizador |
-|----------------|--------------|---------------------|--------------------------|
-| ![Login](/galeria/PaginaInicial.png) | ![](./doc/img/login.png) | ![](./doc/img/admin-consultas.png) | ![](./doc/img/user-consultas.png) |
+| Funcionalidade | Imagem |
+| --- | ----------- |
+| Página Inicial |  ![Login](/galeria/PaginaInicial.png) |
+| Login Google |  ![Users](/galeria/users.png) |
+| Consultas do Admi |  ![Doctors](/galeria/doctors.png) |
+| Consultas do Utilizador |  ![Appointments](/galeria/appointments.png) |
 
 ## 🛠️ Tecnologias Utilizadas
 
