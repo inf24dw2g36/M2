@@ -58,6 +58,16 @@ O relatório está organizado por capítulos em ficheiros Markdown na pasta `/do
 - [`doc/capitulo3.md`](./doc/capitulo3.md): Produto (frontend + backend + docker)
 - [`doc/capitulo4.md`](./doc/capitulo4.md): Apresentação e conclusões
 
+## Link's dos repositórios do Docker Hub
+
+### DEV
+- **nodejs** - docker pull inf24dw1g36/node:dw2.m2
+- **mysql** - docker pull inf24dw1g36/mysql:dw2.m2
+
+### PROD
+- **nodejs** - docker pull inf24dw1g36/node:dw2.m2prod
+- **mysql** -docker pull inf24dw1g36/mysql:dw2.m2prod
+
 ## 👥 Elementos do Grupo
 
 - João Pedro Freitas Gomes – nº045235 @joaoismai
