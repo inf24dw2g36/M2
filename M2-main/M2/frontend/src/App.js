@@ -1,13 +1,11 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
- 
 // Importações do Material-UI
 import {
   AppBar, Toolbar, Typography, Button, Container, Box,
   TextField, Select, MenuItem, FormControl, InputLabel,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  CircularProgress, IconButton // Adicionado IconButton para o botão de fechar modal
+  CircularProgress, IconButton
 } from '@mui/material';
- 
 // Importações dos Ícones do Material-UI (substituindo lucide-react)
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PersonIcon from '@mui/icons-material/Person';
@@ -15,34 +13,34 @@ import HealingIcon from '@mui/icons-material/Healing';
 import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Para "Agendar Nova Consulta"
-import DeleteIcon from '@mui/icons-material/Delete'; // Para "Apagar Consulta"
-import CloseIcon from '@mui/icons-material/Close'; // Para o botão de fechar o modal
- 
- 
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+
+
 // Contexto para gerir o estado de autenticação e dados do utilizador
 const AuthContext = createContext(null);
- 
+
 // Componente principal da aplicação
 const App = () => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [message, setMessage] = useState('');
- 
+
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 3000);
   };
- 
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get('token');
- 
+
     if (jwtToken) {
       setToken(jwtToken);
       localStorage.setItem('jwtToken', jwtToken);
       window.history.replaceState({}, document.title, window.location.pathname);
- 
+
       try {
         const decodedUser = JSON.parse(atob(jwtToken.split('.')[1]));
         setUser(decodedUser);
@@ -70,11 +68,11 @@ const App = () => {
       }
     }
   }, []);
- 
+
   const handleLogin = () => {
     window.location.href = 'http://localhost:3000/auth/google';
   };
- 
+
   const handleLogout = () => {
     setToken(null);
     setUser(null);
@@ -83,9 +81,9 @@ const App = () => {
     clearMessage();
     setCurrentPage('home');
   };
- 
+
   const authContextValue = { token, user, handleLogout, setMessage, clearMessage };
- 
+
   return (
     <AuthContext.Provider value={authContextValue}>
       <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.100', display: 'flex', flexDirection: 'column' }}>
@@ -101,9 +99,9 @@ const App = () => {
                 <>
                   <Button color="inherit" onClick={() => setCurrentPage('appointments')} startIcon={<CalendarMonthIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Todas as Consultas</Button>
                   {user?.role === 'user' && (
-                  <Button color="inherit" onClick={() => setCurrentPage('my-appointments')} startIcon={<PersonIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>
-                    As Minhas Consultas
-                  </Button>
+                    <Button color="inherit" onClick={() => setCurrentPage('my-appointments')} startIcon={<PersonIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>
+                      As Minhas Consultas
+                    </Button>
                   )}
                   <Button color="inherit" onClick={() => setCurrentPage('doctors')} startIcon={<HealingIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Médicos</Button>
                   <Button color="inherit" onClick={() => setCurrentPage('specialties')} startIcon={<HealingIcon />} sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}>Especialidades</Button>
@@ -117,13 +115,13 @@ const App = () => {
             </Box>
           </Toolbar>
         </AppBar>
- 
+
         {message && (
           <Box sx={{ position: 'fixed', top: 80, right: 16, backgroundColor: 'info.main', color: 'white', p: 2, borderRadius: 2, boxShadow: 3, zIndex: 50 }}>
             <Typography variant="body1">{message}</Typography>
           </Box>
         )}
- 
+
         <Container sx={{ mt: 4, flexGrow: 1, padding: 3 }}>
           {user && (
             <Box sx={{ backgroundColor: 'blue.100', color: 'blue.800', p: 2, borderRadius: 2, boxShadow: 2, mb: 3, textAlign: 'center' }}>
@@ -132,7 +130,7 @@ const App = () => {
               </Typography>
             </Box>
           )}
- 
+
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'appointments' && token && <AppointmentsPage />}
           {currentPage === 'my-appointments' && token && <MyAppointmentsPage />}
@@ -145,7 +143,7 @@ const App = () => {
             </Box>
           )}
         </Container>
- 
+
         <Box sx={{ backgroundColor: 'grey.800', color: 'white', p: 2, textAlign: 'center', borderTopLeftRadius: 8, borderTopRightRadius: 8, boxShadow: '0px -2px 4px rgba(0,0,0,0.2)' }}>
           <Typography variant="body2">&copy; 2025 Scheduler App. Todos os direitos reservados.</Typography>
         </Box>
@@ -153,7 +151,7 @@ const App = () => {
     </AuthContext.Provider>
   );
 };
- 
+
 // Componente para exibir as Consultas do Utilizador Logado
 const MyAppointmentsPage = () => {
   const { token, user, setMessage, clearMessage } = useContext(AuthContext);
@@ -162,7 +160,7 @@ const MyAppointmentsPage = () => {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
- 
+
   const fetchMyAppointments = async () => {
     if (!token || !user) {
       setMessage('Erro: Utilizador não autenticado para ver as suas consultas.');
@@ -191,19 +189,19 @@ const MyAppointmentsPage = () => {
       setLoading(false);
     }
   };
- 
+
   useEffect(() => {
     fetchMyAppointments();
   }, [token, user]);
- 
+
   const handleDeleteClick = (appointment) => {
     setAppointmentToDelete(appointment);
     setShowDeleteModal(true);
   };
- 
+
   const confirmDelete = async () => {
     if (!appointmentToDelete) return;
- 
+
     try {
       const response = await fetch(`http://localhost:3000/api/appointments/${appointmentToDelete.id}`, {
         method: 'DELETE',
@@ -211,12 +209,12 @@ const MyAppointmentsPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
- 
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falha ao apagar a consulta.');
       }
- 
+
       setAppointments(prev => prev.filter(app => app.id !== appointmentToDelete.id));
       setMessage('Consulta apagada com sucesso!');
       clearMessage();
@@ -228,15 +226,15 @@ const MyAppointmentsPage = () => {
       setAppointmentToDelete(null);
     }
   };
- 
+
   const cancelDelete = () => {
     setShowDeleteModal(false);
     setAppointmentToDelete(null);
   };
- 
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
- 
+
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Minhas Consultas</Typography>
@@ -250,7 +248,7 @@ const MyAppointmentsPage = () => {
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Hora: {appointment.time}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Notas: {appointment.notes || 'N/A'}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Médico: {appointment.Doctor ? appointment.Doctor.name : 'Desconhecido'}</Typography>
-             
+
               {/* Mostrar botão apagar só se o utilizador for role 'user' */}
               {user?.role === 'user' && (
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
@@ -263,7 +261,7 @@ const MyAppointmentsPage = () => {
           ))}
         </Box>
       )}
- 
+
       <Dialog open={showDeleteModal} onClose={cancelDelete}>
         <DialogTitle>Confirmar Eliminação</DialogTitle>
         <DialogContent>
@@ -277,13 +275,13 @@ const MyAppointmentsPage = () => {
     </Box>
   );
 };
- 
+
 // Componente da Página Inicial
 const HomePage = () => (
   <Box sx={{ backgroundColor: 'white', p: 4, borderRadius: 2, boxShadow: 3, textAlign: 'center' }}>
     <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800' }}>Bem-vindo ao Scheduler App!</Typography>
     <Typography variant="body1" paragraph sx={{ color: 'grey.600' }}>
-      A sua plataforma completa para gerir agendamentos de consultas médicas.
+      A sua plataforma para marcação de consultas médicas.
     </Typography>
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'center', alignItems: 'center', gap: 3, mt: 3 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2, backgroundColor: 'blue.50', borderRadius: 2, boxShadow: 2, width: { xs: '100%', sm: '33.333%' } }}>
@@ -302,12 +300,9 @@ const HomePage = () => (
         <Typography variant="body2" sx={{ color: 'grey.500' }}>Descubra as diversas especialidades médicas oferecidas.</Typography>
       </Box>
     </Box>
-    <Typography variant="body1" sx={{ mt: 3, color: 'grey.700' }}>
-      Faça login para começar a gerir os seus agendamentos!
-    </Typography>
   </Box>
 );
- 
+
 // Componente para exibir a lista de Consultas
 const AppointmentsPage = () => {
   const { token, user, setMessage, clearMessage } = useContext(AuthContext);
@@ -315,7 +310,9 @@ const AppointmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
- 
+  const [showEditModal, setShowEditModal] = useState(false); // New state for edit modal
+  const [appointmentToEdit, setAppointmentToEdit] = useState(null); // New state for appointment to edit
+
   const fetchAppointments = async () => {
     if (!token) return;
     try {
@@ -339,19 +336,30 @@ const AppointmentsPage = () => {
       setLoading(false);
     }
   };
- 
+
   useEffect(() => {
     fetchAppointments();
   }, [token]);
- 
+
   const handleAppointmentCreated = () => {
     setShowCreateModal(false);
     fetchAppointments();
   };
- 
+
+  const handleEditClick = (appointment) => { // New function to handle edit button click
+    setAppointmentToEdit(appointment);
+    setShowEditModal(true);
+  };
+
+  const handleAppointmentUpdated = () => { // New function to handle appointment update
+    setShowEditModal(false);
+    setAppointmentToEdit(null);
+    fetchAppointments(); // Re-fetch appointments to show the updated data
+  };
+
   const handleDeleteAppointment = async (id) => {
     if (!window.confirm('Tens a certeza que queres apagar esta consulta?')) return;
- 
+
     try {
       const response = await fetch(`http://localhost:3000/api/appointments/${id}`, {
         method: 'DELETE',
@@ -359,12 +367,12 @@ const AppointmentsPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
- 
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falha ao apagar consulta.');
       }
- 
+
       setAppointments(prev => prev.filter(app => app.id !== id));
       setMessage('Consulta apagada com sucesso.');
       clearMessage();
@@ -374,10 +382,10 @@ const AppointmentsPage = () => {
       clearMessage();
     }
   };
- 
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
- 
+
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -386,7 +394,7 @@ const AppointmentsPage = () => {
           Agendar Nova Consulta
         </Button>
       </Box>
- 
+
       {appointments.length === 0 ? (
         <Typography sx={{ textAlign: 'center', color: 'grey.600' }}>Nenhuma consulta encontrada.</Typography>
       ) : (
@@ -398,42 +406,58 @@ const AppointmentsPage = () => {
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Notas: {appointment.notes || 'N/A'}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Utilizador: {appointment.User ? appointment.User.name : 'Desconhecido'}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Médico: {appointment.Doctor ? appointment.Doctor.name : 'Desconhecido'}</Typography>
- 
+
               {user?.role === 'admin' && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  sx={{ mt: 1 }}
-                  onClick={() => handleDeleteAppointment(appointment.id)}
-                >
-                  Apagar
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary" // Changed to primary for edit
+                    size="small"
+                    onClick={() => handleEditClick(appointment)} // Call handleEditClick
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={() => handleDeleteAppointment(appointment.id)}
+                  >
+                    Apagar
+                  </Button>
+                </Box>
               )}
             </Box>
           ))}
         </Box>
       )}
- 
+
       {showCreateModal && (
         <CreateAppointmentForm
           onClose={() => setShowCreateModal(false)}
           onAppointmentCreated={handleAppointmentCreated}
         />
       )}
+
+      {showEditModal && appointmentToEdit && ( // Render EditAppointmentForm
+        <EditAppointmentForm
+          appointment={appointmentToEdit}
+          onClose={() => setShowEditModal(false)}
+          onAppointmentUpdated={handleAppointmentUpdated}
+        />
+      )}
     </Box>
   );
 };
- 
- 
- 
+
+
 // Componente para exibir a lista de Médicos
 const DoctorsPage = () => {
   const { token, setMessage, clearMessage } = useContext(AuthContext);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- 
+
   useEffect(() => {
     const fetchDoctors = async () => {
       if (!token) return;
@@ -460,10 +484,10 @@ const DoctorsPage = () => {
     };
     fetchDoctors();
   }, [token]);
- 
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
- 
+
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Nossos Médicos</Typography>
@@ -474,7 +498,7 @@ const DoctorsPage = () => {
           {doctors.map(doctor => (
             <Box key={doctor.id} sx={{ p: 2, borderRadius: 2, boxShadow: 1, border: '1px solid', borderColor: 'primary.200', backgroundColor: 'primary.50' }}>
               <Typography variant="body1" sx={{ fontWeight: 'semibold', color: 'primary.800' }}>Nome: {doctor.name}</Typography>
-              <Typography variant="body1" sx={{ color: 'grey.700' }}>Especialidade: {doctor.specialty ? doctor.specialty.name : 'N/A'}</Typography> {/* CORRIGIDO AQUI */}
+              <Typography variant="body1" sx={{ color: 'grey.700' }}>Especialidade: {doctor.specialty ? doctor.specialty.name : 'N/A'}</Typography>
             </Box>
           ))}
         </Box>
@@ -482,14 +506,14 @@ const DoctorsPage = () => {
     </Box>
   );
 };
- 
+
 // Componente para exibir a lista de Especialidades
 const SpecialtiesPage = () => {
   const { token, setMessage, clearMessage } = useContext(AuthContext);
   const [specialties, setSpecialties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- 
+
   useEffect(() => {
     const fetchSpecialties = async () => {
       if (!token) return;
@@ -516,10 +540,10 @@ const SpecialtiesPage = () => {
     };
     fetchSpecialties();
   }, [token]);
- 
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
- 
+
   return (
     <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'grey.800', textAlign: 'center' }}>Especialidades Médicas</Typography>
@@ -537,7 +561,7 @@ const SpecialtiesPage = () => {
     </Box>
   );
 };
- 
+
 // Componente: Formulário para Criar Nova Consulta
 const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
   const { token, user, setMessage, clearMessage } = useContext(AuthContext);
@@ -550,7 +574,7 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [formLoading, setFormLoading] = useState(true);
   const [formError, setFormError] = useState(null);
- 
+
   useEffect(() => {
     const fetchFormData = async () => {
       if (!token) {
@@ -564,13 +588,13 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
         });
         const doctorsData = await doctorsResponse.json();
         setDoctors(doctorsData);
- 
+
         const specialtiesResponse = await fetch('http://localhost:3000/api/specialties', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const specialtiesData = await specialtiesResponse.json();
         setSpecialties(specialtiesData);
- 
+
       } catch (err) {
         setFormError(`Erro ao carregar dados: ${err.message}`);
         setMessage(`Erro ao carregar dados para o formulário: ${err.message}`);
@@ -581,19 +605,19 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
     };
     fetchFormData();
   }, [token]);
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
     setFormError(null);
- 
+
     if (!user || !user.id) {
       setMessage('Erro: ID do utilizador não disponível para agendar consulta.');
       clearMessage();
       setFormLoading(false);
       return;
     }
- 
+
     const newAppointment = {
       user_id: user.id,
       doctorId: parseInt(selectedDoctor),
@@ -602,10 +626,10 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
       time,
       notes
     };
- 
- 
+
+
     console.log('A enviar nova consulta:', newAppointment);
- 
+
     try {
       const response = await fetch('http://localhost:3000/api/appointments', {
         method: 'POST',
@@ -615,12 +639,12 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
         },
         body: JSON.stringify(newAppointment),
       });
- 
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falha ao agendar consulta.');
       }
- 
+
       setMessage('Consulta agendada com sucesso!');
       clearMessage();
       onAppointmentCreated();
@@ -632,18 +656,18 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
       setFormLoading(false);
     }
   };
- 
+
   const filteredDoctors = selectedSpecialty
     ? doctors.filter(doctor => doctor.specialty && doctor.specialty.id === parseInt(selectedSpecialty))
     : doctors;
- 
+
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Agendar Nova Consulta</DialogTitle>
       <DialogContent dividers>
         {formLoading && <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}><CircularProgress /></Box>}
         {formError && <Typography color="error" sx={{ mb: 2 }}>Erro: {formError}</Typography>}
- 
+
         {!formLoading && (
           <form onSubmit={handleSubmit}>
             <TextField
@@ -725,5 +749,167 @@ const CreateAppointmentForm = ({ onClose, onAppointmentCreated }) => {
     </Dialog>
   );
 };
- 
+
+// Componente: Admin editar Consultas
+const EditAppointmentForm = ({ appointment, onClose, onAppointmentUpdated }) => {
+  const { token, setMessage, clearMessage } = useContext(AuthContext);
+  const [date, setDate] = useState(appointment.date || '');
+  const [time, setTime] = useState(appointment.time || '');
+  const [notes, setNotes] = useState(appointment.notes || '');
+  const [selectedDoctor, setSelectedDoctor] = useState(appointment.doctor_id || '');
+  const [selectedSpecialty, setSelectedSpecialty] = useState(appointment.Doctor?.specialty?.id || '');
+  const [doctors, setDoctors] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [formError, setFormError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [doctorsRes, specialtiesRes] = await Promise.all([
+          fetch('http://localhost:3000/api/doctors', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('http://localhost:3000/api/specialties', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const doctorsData = await doctorsRes.json();
+        const specialtiesData = await specialtiesRes.json();
+        setDoctors(doctorsData);
+        setSpecialties(specialtiesData);
+      } catch (err) {
+        setFormError(`Erro ao carregar dados: ${err.message}`);
+        setMessage(`Erro: ${err.message}`);
+        clearMessage();
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [token]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+    const updatedAppointment = {
+      date,
+      time,
+      notes,
+      doctor_id: parseInt(selectedDoctor),
+    };
+    try {
+      const response = await fetch(`http://localhost:3000/api/appointments/${appointment.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedAppointment),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao atualizar a consulta.');
+      }
+
+      setMessage('Consulta atualizada com sucesso!');
+      clearMessage();
+      onAppointmentUpdated();
+    } catch (err) {
+      setFormError(err.message);
+      setMessage(`Erro ao atualizar: ${err.message}`);
+      clearMessage();
+    }
+  };
+
+  const filteredDoctors = selectedSpecialty
+    ? doctors.filter((doc) => doc.specialty && doc.specialty.id === parseInt(selectedSpecialty))
+    : doctors;
+
+  return (
+    <Dialog open onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Editar Consulta</DialogTitle>
+      <DialogContent dividers>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}><CircularProgress /></Box>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            {formError && <Typography color="error" sx={{ mb: 2 }}>Erro: {formError}</Typography>}
+
+            <TextField
+              label="Data"
+              type="date"
+              fullWidth
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              InputLabelProps={{ shrink: true }}
+              sx={{ mb: 2 }}
+            />
+
+            <TextField
+              label="Hora"
+              type="time"
+              fullWidth
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              required
+              InputLabelProps={{ shrink: true }}
+              sx={{ mb: 2 }}
+            />
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="specialty-label">Especialidade</InputLabel>
+              <Select
+                labelId="specialty-label"
+                value={selectedSpecialty}
+                label="Especialidade"
+                onChange={(e) => {
+                  setSelectedSpecialty(e.target.value);
+                  setSelectedDoctor('');
+                }}
+                required
+              >
+                <MenuItem value="">Selecione uma Especialidade</MenuItem>
+                {specialties.map(spec => (
+                  <MenuItem key={spec.id} value={spec.id}>{spec.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="doctor-label">Médico</InputLabel>
+              <Select
+                labelId="doctor-label"
+                value={selectedDoctor}
+                label="Médico"
+                onChange={(e) => setSelectedDoctor(e.target.value)}
+                required
+                disabled={!selectedSpecialty}
+              >
+                <MenuItem value="">Selecione um Médico</MenuItem>
+                {filteredDoctors.map(doc => (
+                  <MenuItem key={doc.id} value={doc.id}>{doc.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Notas"
+              multiline
+              rows={3}
+              fullWidth
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+
+            <DialogActions>
+              <Button onClick={onClose} variant="outlined">Cancelar</Button>
+              <Button type="submit" variant="contained">Guardar Alterações</Button>
+            </DialogActions>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default App;
+

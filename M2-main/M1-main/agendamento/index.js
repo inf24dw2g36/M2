@@ -70,14 +70,18 @@ const usersDocs = yaml.load('./docs/users.yaml');
 const doctorsDocs = yaml.load('./docs/doctors.yaml');
 const appointmentsDocs = yaml.load('./docs/appointments.yaml');
 const specialtiesDocs = yaml.load('./docs/specialties.yaml');
+const prefixPaths = (paths, prefix) =>
+  Object.fromEntries(
+    Object.entries(paths).map(([key, value]) => [`${prefix}${key}`, value])
+  );
 
 const swaggerDocument = {
   ...swaggerDefinition,
   paths: {
-    ...usersDocs.paths,
-    ...doctorsDocs.paths,
-    ...appointmentsDocs.paths,
-    ...specialtiesDocs.paths,
+    ...prefixPaths(usersDocs.paths, '/api'),
+    ...prefixPaths(doctorsDocs.paths, '/api'),
+    ...prefixPaths(appointmentsDocs.paths, '/api'),
+    ...prefixPaths(specialtiesDocs.paths, '/api'),
   },
 };
 
