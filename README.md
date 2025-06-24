@@ -53,10 +53,17 @@ A documentação da API encontra-se em formato OpenAPI (Swagger), especificando 
 
 O relatório está organizado por capítulos em ficheiros Markdown na pasta `/doc`.
 
-- [`doc/capitulo1.md`](./doc/capitulo1.md): Apresentação do projeto
-- [`doc/capitulo2.md`](./doc/capitulo2.md): Recursos (API, Base de Dados, Auth)
-- [`doc/capitulo3.md`](./doc/capitulo3.md): Produto (frontend + backend + docker)
-- [`doc/capitulo4.md`](./doc/capitulo4.md): Apresentação e conclusões
+### Apresentação do Projeto
+* Capítulo 1: [Apresentação o Projeto](docs/c1.md)
+
+### Recursos
+* Capítulo 2: [Recursos](docs/c2.md)
+
+### Produto
+* Capítulo 3: [Produto](docs/c3.md)
+
+### Apresentação
+* Capitulo 4: [Apresentação do trabalho](docs/c4.md)
 
 ## Link's dos repositórios do Docker Hub
 
