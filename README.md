@@ -63,7 +63,6 @@ O relatório está organizado por capítulos em ficheiros Markdown na pasta `/do
 
 - João Pedro Freitas Gomes – nº045235 @joaoismai
 - António Manuel Estrela Magriço de Oliveira – nº 044409 @A044409
-- Organização: [inf24dw2g36 (GitHub)](https://github.com/inf24dw2g36)
 
 ---
 
