@@ -22,7 +22,7 @@ A API foi desenvolvida no Momento 1 com Node.js, Express e MySQL, protegida por 
 
 A documentação da API encontra-se em formato OpenAPI (Swagger), especificando todos os endpoints REST, com autenticação, parâmetros, respostas e permissões.
 
-- [openapi.json](./doc/openapi.json)
+- [openapi.json](.M2-main/M1-main/PostmanCollection/API de Agendamento de Consultas.postman_collection.json)
 
 ## 🖼️ Galeria
 
