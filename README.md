@@ -59,10 +59,10 @@ O relatório está organizado por capítulos em ficheiros Markdown na pasta `/do
 - [`doc/capitulo3.md`](./doc/capitulo3.md): Produto (frontend + backend + docker)
 - [`doc/capitulo4.md`](./doc/capitulo4.md): Apresentação e conclusões
 
-## 👥 Equipa
+## 👥 Elementos do Grupo
 
-- João Gonçalves - @joaogoncalves
-- [Adiciona restantes elementos do grupo com @nomesGitHub]
+- João Pedro Freitas Gomes – nº045235 @joaoismai
+- António Manuel Estrela Magriço de Oliveira – nº 044409 @A044409
 - Organização: [inf24dw2g36 (GitHub)](https://github.com/inf24dw2g36)
 
 ---
