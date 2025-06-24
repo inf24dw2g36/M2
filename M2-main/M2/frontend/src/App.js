@@ -4,7 +4,7 @@ import {
   AppBar, Toolbar, Typography, Button, Container, Box,
   TextField, Select, MenuItem, FormControl, InputLabel,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  CircularProgress, IconButton
+  CircularProgress
 } from '@mui/material';
 // Importações dos Ícones do Material-UI (substituindo lucide-react)
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -15,7 +15,6 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon from '@mui/icons-material/Close';
 
 
 // Contexto para gerir o estado de autenticação e dados do utilizador
@@ -304,14 +303,19 @@ const HomePage = () => (
 );
 
 // Componente para exibir a lista de Consultas
+// Componente para exibir a lista de Consultas
 const AppointmentsPage = () => {
   const { token, user, setMessage, clearMessage } = useContext(AuthContext);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // New state for edit modal
-  const [appointmentToEdit, setAppointmentToEdit] = useState(null); // New state for appointment to edit
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [appointmentToEdit, setAppointmentToEdit] = useState(null);
+
+  const [filterDate, setFilterDate] = useState('');
+  const [filterDoctor, setFilterDoctor] = useState('');
+  const [filterUser, setFilterUser] = useState('');
 
   const fetchAppointments = async () => {
     if (!token) return;
@@ -346,15 +350,15 @@ const AppointmentsPage = () => {
     fetchAppointments();
   };
 
-  const handleEditClick = (appointment) => { // New function to handle edit button click
+  const handleEditClick = (appointment) => {
     setAppointmentToEdit(appointment);
     setShowEditModal(true);
   };
 
-  const handleAppointmentUpdated = () => { // New function to handle appointment update
+  const handleAppointmentUpdated = () => {
     setShowEditModal(false);
     setAppointmentToEdit(null);
-    fetchAppointments(); // Re-fetch appointments to show the updated data
+    fetchAppointments();
   };
 
   const handleDeleteAppointment = async (id) => {
@@ -383,6 +387,13 @@ const AppointmentsPage = () => {
     }
   };
 
+  const filteredAppointments = appointments.filter(app => {
+    const matchesDate = !filterDate || app.date === filterDate;
+    const matchesDoctor = !filterDoctor || app.Doctor?.name?.toLowerCase().includes(filterDoctor.toLowerCase());
+    const matchesUser = !filterUser || app.User?.name?.toLowerCase().includes(filterUser.toLowerCase());
+    return matchesDate && matchesDoctor && matchesUser;
+  });
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   if (error) return <Typography color="error" sx={{ textAlign: 'center' }}>Erro: {error}</Typography>;
 
@@ -395,11 +406,31 @@ const AppointmentsPage = () => {
         </Button>
       </Box>
 
-      {appointments.length === 0 ? (
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        <TextField
+          label="Filtrar por Data"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+        />
+        <TextField
+          label="Filtrar por Médico"
+          value={filterDoctor}
+          onChange={(e) => setFilterDoctor(e.target.value)}
+        />
+        <TextField
+          label="Filtrar por Utilizador"
+          value={filterUser}
+          onChange={(e) => setFilterUser(e.target.value)}
+        />
+      </Box>
+
+      {filteredAppointments.length === 0 ? (
         <Typography sx={{ textAlign: 'center', color: 'grey.600' }}>Nenhuma consulta encontrada.</Typography>
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
-          {appointments.map(appointment => (
+          {filteredAppointments.map(appointment => (
             <Box key={appointment.id} sx={{ p: 2, borderRadius: 2, boxShadow: 1, border: '1px solid', borderColor: 'blue.200', backgroundColor: 'blue.50' }}>
               <Typography variant="body1" sx={{ fontWeight: 'semibold', color: 'blue.800' }}>Data: {appointment.date}</Typography>
               <Typography variant="body1" sx={{ color: 'grey.700' }}>Hora: {appointment.time}</Typography>
@@ -411,9 +442,9 @@ const AppointmentsPage = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
                   <Button
                     variant="outlined"
-                    color="primary" // Changed to primary for edit
+                    color="primary"
                     size="small"
-                    onClick={() => handleEditClick(appointment)} // Call handleEditClick
+                    onClick={() => handleEditClick(appointment)}
                   >
                     Editar
                   </Button>
@@ -439,7 +470,7 @@ const AppointmentsPage = () => {
         />
       )}
 
-      {showEditModal && appointmentToEdit && ( // Render EditAppointmentForm
+      {showEditModal && appointmentToEdit && (
         <EditAppointmentForm
           appointment={appointmentToEdit}
           onClose={() => setShowEditModal(false)}
@@ -912,4 +943,3 @@ const EditAppointmentForm = ({ appointment, onClose, onAppointmentUpdated }) => 
 };
 
 export default App;
-
