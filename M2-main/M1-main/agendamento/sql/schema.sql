@@ -151,4 +151,3 @@ INSERT INTO appointments (date, time, notes, user_id, doctor_id) VALUES
 ('2025-04-15', '10:30:00', 'Consulta de rotina', 18, 20),
 ('2025-04-16', '10:30:00', 'Exame ortopédico', 1, 2),
 ('2025-04-16', '12:00:00', 'Consulta pediátrica de acompanhamento', 2, 3);
-

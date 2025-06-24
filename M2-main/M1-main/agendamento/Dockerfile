@@ -9,7 +9,6 @@ RUN npm install
 
 # Instalar o netcat (nc)
 RUN apt-get update && apt-get install -y netcat-traditional
-RUN npm config set strict-ssl false
 RUN npm install -g nodemon
 
 COPY . .
